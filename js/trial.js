@@ -28,18 +28,41 @@ var dt=0.5; // only initialization
 
 // physical geometry settings [m]
 
-var mainroadLen=770;
+var mainroadLen=1770;
 var nLanes=8;
 var laneWidth=7;
 var spawnLanes = [3,4];
 
 var lenRoadworkElement=10;
-var beginU = 200;
+var beginUL = 300;
+var beginUR = 500;
 var laneRoadworks=
 [
-    [[0,7],beginU],
-    [[0,1,6,7],beginU + lenRoadworkElement],
-    [[0,1,2,5,6,7],beginU + 2 * lenRoadworkElement],
+    [[0,1,6,7],beginUL],
+    [[0,1,6,7],beginUL - lenRoadworkElement],
+    [[0,1,6,7],beginUL - 2 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 3 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 4 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 5 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 6 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 7 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 8 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 9 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 10 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 11 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 12 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 13 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 14 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 15 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 16 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 17 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 18 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 19 * lenRoadworkElement],
+    [[0,1,6,7],beginUL - 20 * lenRoadworkElement],
+    [[0,7],beginUR],
+    [[0,7],beginUR + lenRoadworkElement],
+    [[0,1,6,7],beginUR + 2 * lenRoadworkElement],
+    [[0,1,6,7],beginUR + 2 * lenRoadworkElement],
 ]
 
 var straightLen=0.34*mainroadLen;      // straight segments of U
@@ -48,7 +71,7 @@ var arcRadius=arcLen/Math.PI;
 var center_xPhys=95; //!! only IC
 var center_yPhys=-105; // !! only IC ypixel downwards=> physical center <0
 
-var sizePhys=200;  // typical physical linear dimension for scaling 
+var sizePhys=200;  // typical physical linear dimension for scaling
 
 
 // specification of vehicle and traffic  properties
@@ -56,7 +79,7 @@ var sizePhys=200;  // typical physical linear dimension for scaling
 var car_length=7; // car length in m
 var car_width=5; // car width in m
 var truck_length=12; // trucks
-var truck_width=7; 
+var truck_width=7;
 
 // initial parameter settings (!! transfer def to GUI if variable in sliders!)
 
@@ -96,7 +119,7 @@ var road3lanes_srcFile='figs/threeLanesRoadRealisticCropped.png';
 var ramp_srcFile='figs/oneLaneRoadRealisticCropped.png';
 
 // Notice: set drawBackground=false if no bg wanted
-var background_srcFile='figs/backgroundGrass.jpg'; 
+var background_srcFile='figs/backgroundGrass.jpg';
 
 
 
@@ -106,9 +129,9 @@ var background_srcFile='figs/backgroundGrass.jpg';
 
 var canvas;
 var ctx;  // graphics context
- 
+
 var background;
- 
+
 
 
 
@@ -128,12 +151,12 @@ var LCModelMandatoryRight=new MOBIL(MOBIL_mandat_bSafe, MOBIL_mandat_bSafeMax,
 var LCModelMandatoryLeft=new MOBIL(MOBIL_mandat_bSafe, MOBIL_mandat_bSafeMax,
                    MOBIL_mandat_bThr, -MOBIL_mandat_bias);
 
-updateModels(); 
+updateModels();
                       // LCModelCar,LCModelTruck);
 
 var isRing=0;  // 0: false; 1: true
 var roadID=1;
-var mainroad=new road(roadID, mainroadLen, nLanes, densityInit, speedInit, 
+var mainroad=new road(roadID, mainroadLen, nLanes, densityInit, speedInit,
               truckFracInit, isRing);
 
 mainroad.LCModelMandatoryRight=LCModelMandatoryRight; //unique mandat LC model
@@ -142,7 +165,7 @@ mainroad.LCModelMandatoryLeft=LCModelMandatoryLeft; //unique mandat LC model
 
 
 //#########################################################
-// add standing virtual vehicles at position of road works 
+// add standing virtual vehicles at position of road works
 //#########################################################
 
 // number of virtual "roadwork" vehicles
@@ -161,7 +184,7 @@ for (var i = 0; i < laneRoadworks.length; i++) {
         lane = lanes[j];
         console.log("roadwork in lane "+lane)
         var u = beginPos + lenRoadworkElement;
-        var virtualStandingVeh=new vehicle(lenRoadworkElement, laneWidth, 
+        var virtualStandingVeh=new vehicle(lenRoadworkElement, laneWidth,
                         u,lane, 0, "obstacle");
          virtualStandingVeh.longModel=longModelObstacle;
          virtualStandingVeh.LCModel=LCModelObstacle;
@@ -169,7 +192,7 @@ for (var i = 0; i < laneRoadworks.length; i++) {
     };
 }
 
-// put roadwork obstacles at right place and let vehicles get context of them 
+// put roadwork obstacles at right place and let vehicles get context of them
 
 mainroad.sortVehicles();
 mainroad.updateEnvironment();
@@ -211,9 +234,9 @@ function updateU(){
     time +=dt; // dt depends on timewarp slider (fps=const)
     itime++;
 
-    // transfer effects from slider interaction => updateModels() in *_gui.js 
+    // transfer effects from slider interaction => updateModels() in *_gui.js
     // to the vehicles and their models (all cars and trucks share
-    // the same model) 
+    // the same model)
 
     if(false){
     console.log("longModelCar.speedlimit="+longModelCar.speedlimit
@@ -235,8 +258,8 @@ function updateU(){
     // do central simulation update of vehicles
 
     mainroad.updateLastLCtimes(dt);
-    mainroad.calcAccelerations();  
-    mainroad.changeLanes();         
+    mainroad.calcAccelerations();
+    mainroad.changeLanes();
     mainroad.updateSpeedPositions();
     mainroad.updateBCdown();
     mainroad.updateBCup(qIn,dt, undefined, spawnLanes); // argument=total inflow
@@ -252,7 +275,7 @@ function updateU(){
     }
 
 
- 
+
     //logging
 
     if(false){
@@ -278,11 +301,11 @@ function drawU() {
 //##################################################
 
     /* (0) redefine graphical aspects of road (arc radius etc) using
-     responsive design if canvas has been resized 
+     responsive design if canvas has been resized
      (=actions of canvasresize.js for the ring-road scenario,
      here not usable ecause of side effects with sizePhys)
-     NOTICE: resizing also brings some small traffic effects 
-     because mainRampOffset slightly influenced, but No visible effect 
+     NOTICE: resizing also brings some small traffic effects
+     because mainRampOffset slightly influenced, but No visible effect
      */
 
     var critAspectRatio=1.15;
@@ -302,9 +325,9 @@ function drawU() {
 
     if(hasChanged){
 
-      // update sliderWidth in *_gui.js; 
+      // update sliderWidth in *_gui.js;
 
-      var css_track_vmin=15; // take from sliders.css 
+      var css_track_vmin=15; // take from sliders.css
       sliderWidth=0.01*css_track_vmin*Math.min(canvas.width,canvas.height);
 
       // update geometric properties
@@ -317,7 +340,7 @@ function drawU() {
       center_xPhys=1.2*arcRadius;
       center_yPhys=-1.30*arcRadius; // ypixel downwards=> physical center <0
 
-      scale=refSizePix/sizePhys; 
+      scale=refSizePix/sizePhys;
       if(true){
     console.log("canvas has been resized: new dim ",
             canvas.width,"X",canvas.height," refSizePix=",
@@ -326,8 +349,8 @@ function drawU() {
     }
 
 
- 
-   // (1) define geometry of "U" (road center) as parameterized function of 
+
+   // (1) define geometry of "U" (road center) as parameterized function of
    // the arc length u
 
     function traj_x(u){ // physical coordinates
@@ -350,9 +373,9 @@ function drawU() {
     // "%20-or condition"
     //  because some older firefoxes do not start up properly?
 
-    ctx.setTransform(1,0,0,1,0,0); 
+    ctx.setTransform(1,0,0,1,0,0);
     if(drawBackground){
-    if(hasChanged||(itime<=1) || false || (!drawRoad)){ 
+    if(hasChanged||(itime<=1) || false || (!drawRoad)){
           ctx.drawImage(background,0,0,canvas.width,canvas.height);
       }
     }
@@ -361,12 +384,12 @@ function drawU() {
     // (3) draw mainroad
     // (always drawn; changedGeometry only triggers building a new lookup table)
 
-    
-     var changedGeometry=hasChanged||(itime<=1); 
+
+     var changedGeometry=hasChanged||(itime<=1);
      mainroad.draw(roadImg,scale,traj_x,traj_y,laneWidth,changedGeometry);
 
 
- 
+
     // (4) draw vehicles
 
     mainroad.drawVehicles(carImg,truckImg,obstacleImg,scale,traj_x,traj_y,
@@ -376,7 +399,7 @@ function drawU() {
 
     // (5) draw some running-time vars
   if(true){
-    ctx.setTransform(1,0,0,1,0,0); 
+    ctx.setTransform(1,0,0,1,0,0);
     var textsize=0.02*Math.min(canvas.width,canvas.height); // 2vw;
     ctx.font=textsize+'px Arial';
 
@@ -394,8 +417,8 @@ function drawU() {
     ctx.fillText(timeStr, timeStr_xlb+0.2*textsize,
          timeStr_ylb-0.2*textsize);
 
-    
-   
+
+
     var scaleStr="scale="+Math.round(10*scale)/10;
     var scaleStr_xlb=8*textsize;
     var scaleStr_ylb=timeStr_ylb;
@@ -405,9 +428,9 @@ function drawU() {
     ctx.fillRect(scaleStr_xlb,scaleStr_ylb-scaleStr_height,
          scaleStr_width,scaleStr_height);
     ctx.fillStyle="rgb(0,0,0)";
-    ctx.fillText(scaleStr, scaleStr_xlb+0.2*textsize, 
+    ctx.fillText(scaleStr, scaleStr_xlb+0.2*textsize,
          scaleStr_ylb-0.2*textsize);
-    
+
 /*
 
     var timewStr="timewarp="+Math.round(10*timewarp)/10;
@@ -421,8 +444,8 @@ function drawU() {
     ctx.fillStyle="rgb(0,0,0)";
     ctx.fillText(timewStr, timewStr_xlb+0.2*textsize,
          timewStr_ylb-0.2*textsize);
-    
- 
+
+
     var genVarStr="truckFrac="+Math.round(100*truckFrac)+"\%";
     var genVarStr_xlb=24*textsize;
     var genVarStr_ylb=timeStr_ylb;
@@ -432,9 +455,9 @@ function drawU() {
     ctx.fillRect(genVarStr_xlb,genVarStr_ylb-genVarStr_height,
          genVarStr_width,genVarStr_height);
     ctx.fillStyle="rgb(0,0,0)";
-    ctx.fillText(genVarStr, genVarStr_xlb+0.2*textsize, 
+    ctx.fillText(genVarStr, genVarStr_xlb+0.2*textsize,
          genVarStr_ylb-0.2*textsize);
-    
+
 
     var genVarStr="qIn="+Math.round(3600*qIn)+"veh/h";
     var genVarStr_xlb=32*textsize;
@@ -445,7 +468,7 @@ function drawU() {
     ctx.fillRect(genVarStr_xlb,genVarStr_ylb-genVarStr_height,
          genVarStr_width,genVarStr_height);
     ctx.fillStyle="rgb(0,0,0)";
-    ctx.fillText(genVarStr, genVarStr_xlb+0.2*textsize, 
+    ctx.fillText(genVarStr, genVarStr_xlb+0.2*textsize,
          genVarStr_ylb-0.2*textsize);
 
 */
@@ -460,10 +483,10 @@ function drawU() {
 
 
     // revert to neutral transformation at the end!
-    ctx.setTransform(1,0,0,1,0,0); 
+    ctx.setTransform(1,0,0,1,0,0);
   }
 }
- 
+
 
 function init() {
 
@@ -495,8 +518,8 @@ function init() {
     rampImg.src=ramp_srcFile;
 
 
-    // apply externally functions of mouseMove events  
-    // to initialize sliders settings defined in *_gui.js 
+    // apply externally functions of mouseMove events
+    // to initialize sliders settings defined in *_gui.js
 
     change_timewarpSliderPos(timewarp);
     change_truckFracSliderPos(truckFrac);
@@ -510,12 +533,12 @@ function init() {
     change_IDM_bSliderPos(IDM_b);
 
 
-    // starts simulation thread "main_loop" (defined below) 
+    // starts simulation thread "main_loop" (defined below)
     // with update time interval 1000/fps milliseconds
     // thread starts with "var myRun=init();" or "myRun=init();" (below)
-    // thread stops with "clearInterval(myRun);" 
+    // thread stops with "clearInterval(myRun);"
 
-    return setInterval(main_loop, 1000/fps); 
+    return setInterval(main_loop, 1000/fps);
 } // end init()
 
 
@@ -528,19 +551,17 @@ function main_loop() {
     updateU();
     //mainroad.writeVehicles(); // for debugging
 }
- 
+
 
 //##################################################
 // Actual start of the simulation thread
-// (also started from gui.js "Onramp" button) 
+// (also started from gui.js "Onramp" button)
 // everything w/o function keyword [function f(..)]" actually does something, not only def
 //##################################################
 
- 
- var myRun=init(); //if start with roadworks: init, starts thread "main_loop" 
+
+ var myRun=init(); //if start with roadworks: init, starts thread "main_loop"
 // var myRun; // starts with empty canvas; can be started with "start" button
 // init(); //[w/o var]: starts as well but not controllable by start/stop button (no ref)
-// myRun=init(); // selber Effekt wie "var myRun=init();" 
-// (aber einmal "var"=guter Stil, geht aber implizit auch ohne: Def erstes Mal, dann ref) 
-
-
+// myRun=init(); // selber Effekt wie "var myRun=init();"
+// (aber einmal "var"=guter Stil, geht aber implizit auch ohne: Def erstes Mal, dann ref)

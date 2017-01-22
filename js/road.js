@@ -38,7 +38,7 @@ function road(roadID, roadLen, nLanes, densInitPerLane, speedInit, truckFracInit
   this.MOBIL_bSafeMandat = 4; // mandat LC and merging for v=v0
   this.MOBIL_bSafeMax = 17; //!!! mandat LC and merging for v=0
 
-  // default LC models for mandatory lane changes 
+  // default LC models for mandatory lane changes
   // MOBIL(bSafe,bThr,bias)
   //!! only for preparing diverges! Actual merging with separate function!!
 
@@ -169,7 +169,7 @@ road.prototype.setCFModelsInRange = function(umin, umax, longModelCar, longModel
 
 //#####################################################
 // set vehicles in range to new lane change models
-// (useful for modeling local overtaking bans, 
+// (useful for modeling local overtaking bans,
 // local necessity/desire to drive right etc)
 //#####################################################
 
@@ -190,7 +190,7 @@ road.prototype.setLCModelsInRange = function(umin, umax, LCModelCar, LCModelTruc
 
 
 //#####################################################
-// set vehicles in range to mandatory LC 
+// set vehicles in range to mandatory LC
 // (useful for non-routing related mandatory LC onramps (no offramps), e.g.
 // onramps or before lane closings
 // see also updateModelsOfAllVehicles
@@ -208,7 +208,7 @@ road.prototype.setLCMandatory = function(umin, umax, toRight) {
 }
 
 //#####################################################
-// sort vehicles into descending arc-length positions u 
+// sort vehicles into descending arc-length positions u
 //#####################################################
 
 road.prototype.sortVehicles = function() {
@@ -222,8 +222,8 @@ road.prototype.sortVehicles = function() {
 
 //#####################################################
 /**
-  functions for getting/updating the vehicle environment of a vehicle array 
-  sorted into descending arc-length positions u 
+  functions for getting/updating the vehicle environment of a vehicle array
+  sorted into descending arc-length positions u
 
   vehicle indices iLead, iLag, iLeadLeft, iLeadRight, iLagLeft, iLagRight
 
@@ -379,7 +379,7 @@ road.prototype.updateEnvironment = function() {
 
 
 //######################################################################
-// main calculation of accelerations 
+// main calculation of accelerations
 //######################################################################
 
 
@@ -400,7 +400,20 @@ road.prototype.calcAccelerations = function() {
         accLead = 0;
       } // free outflow BC: virt veh 10km away
     }
-    this.veh[i].acc = this.veh[i].longModel.calcAcc(s, speed, speedLead, accLead);
+
+    if (this.veh[i].isStop) {
+      if (new Date().getTime() - this.veh[i].stopBegin > this.veh[i].stopPeriod) {
+        this.veh[i].isStop = false;
+        this.veh[i].acc = 6;
+        this.veh[i].speed = 10;
+        console.log(new Date().getTime());
+        console.log("vehicle: " + i + this.veh[i]);
+      } else {
+        this.veh[i].acc = 0;
+      }
+    } else {
+      this.veh[i].acc = this.veh[i].longModel.calcAcc(s, speed, speedLead, accLead);
+    }
     //if(false){
     //if(this.veh[i].mandatoryLCahead){
     //if(speed>1.05*this.veh[i].longModel.v0){
@@ -433,6 +446,14 @@ road.prototype.updateSpeedPositions = function() {
     if (this.veh[i].speed < 0) {
       this.veh[i].speed = 0;
     }
+    if (this.veh[i].u > 400  && this.veh[i].u < 410 && !this.veh[i].isStop  && !this.veh[i].hasStopped) {
+      var speed = this.veh[i].speed;
+      this.veh[i].isStop = true;
+      this.veh[i].stopBegin = new Date().getTime();
+      this.veh[i].speed = 0;
+      this.veh[i].stopPeriod = 1000;
+      this.veh[i].hasStopped = true;
+    }
 
     // update drawing coordinates: get_v (fractional lane)
 
@@ -455,11 +476,11 @@ road.prototype.updateSpeedPositions = function() {
 road.prototype.changeLanes = function() {
   var randomBool = Math.random() >= 0.5;
   if (randomBool) {
-    this.doChangesInDirection(1); // changes to right 
-    this.doChangesInDirection(0); // changes to left 
+    this.doChangesInDirection(1); // changes to right
+    this.doChangesInDirection(0); // changes to left
   } else {
-    this.doChangesInDirection(0); // changes to left 
-    this.doChangesInDirection(1); // changes to right 
+    this.doChangesInDirection(0); // changes to left
+    this.doChangesInDirection(1); // changes to right
   }
 }
 
@@ -560,7 +581,7 @@ road.prototype.doChangesInDirection = function(toRight) {
             console.log("after lane change! veh " + i + " from lane " + this.veh[i].laneOld + " to " + this.veh[i].lane + " ");
           }
 
-          // update the local envionment implies 12 updates, 
+          // update the local envionment implies 12 updates,
           // better simply to update all ...
 
           this.updateEnvironment();
@@ -574,22 +595,22 @@ road.prototype.doChangesInDirection = function(toRight) {
 //END NEW 25.06.2016
 
 //######################################################################
-// functionality for merging and diverging to another road. 
+// functionality for merging and diverging to another road.
 //######################################################################
 /**
-In both cases, the road change is from the actual road 
-to the road in the argument list. Only the immediately neighboring 
+In both cases, the road change is from the actual road
+to the road in the argument list. Only the immediately neighboring
 lanes of the two roads interact. The rest must be handled in the
 strategic/tactical lane-change behaviour of the drivers
 
 @param newRoad: the road to which to merge or diverge
-@param offset:  difference[m] in the arclength coordinate u 
+@param offset:  difference[m] in the arclength coordinate u
                 between new and old road
 @param ustart:  start[m] of the merging/diverging zone in old-road coordinates
 @param uend:    end[m] of the merging/diverging zone in old-road coordinates
                 Notice: If merge, exclude virtual vehicle pos from u-range!
-@param isMerge: if true, merge; otherwise diverge. 
-@param toRight: direction of the merge/diverge. 
+@param isMerge: if true, merge; otherwise diverge.
+@param toRight: direction of the merge/diverge.
 
 @return:        void. Both roads are affected!
 */
@@ -615,11 +636,11 @@ road.prototype.mergeDiverge = function(newRoad, offset, uStart, uEnd, isMerge, t
     var targetVehicles = newRoad.getTargetNeighbourhood(
       uNewStart - padding, uNewEnd + padding, targetLane);
 
-    var iMerge = 0; // candidate 
+    var iMerge = 0; // candidate
     var uTarget; // arc-length coordinate of the successfully changing veh(if any)
 
 
-    // (2) select changing vehicle (if any): 
+    // (2) select changing vehicle (if any):
     // only one at each calling; the first vehicle has priority!
 
 
@@ -683,8 +704,8 @@ road.prototype.mergeDiverge = function(newRoad, offset, uStart, uEnd, isMerge, t
           var LCModel = new MOBIL(bSafeMergeMin, bSafeMergeMax, 0, bBiasMerge);
 
           //!!! this alt: LCModel* overwritten from top-level routines! bSafe=42
-          //var LCModel=(toRight) ? this.LCModelMandatoryRight 
-          // : this.LCModelMandatoryLeft; 
+          //var LCModel=(toRight) ? this.LCModelMandatoryRight
+          // : this.LCModelMandatoryLeft;
 
           var vrel = originVehicles[i].speed / originVehicles[i].longModel.v0;
           var acc = originVehicles[i].acc;
@@ -720,9 +741,9 @@ road.prototype.mergeDiverge = function(newRoad, offset, uStart, uEnd, isMerge, t
 
     //(3) if success, do the actual merging!
 
-    if (success) { // do the actual merging 
+    if (success) { // do the actual merging
 
-      //originVehicles[iMerge]=veh[iMerge+this.iOffset] 
+      //originVehicles[iMerge]=veh[iMerge+this.iOffset]
 
       var iOrig = iMerge + this.iOffset;
       if (log) {
@@ -742,7 +763,7 @@ road.prototype.mergeDiverge = function(newRoad, offset, uStart, uEnd, isMerge, t
       changingVeh.dt_lastLC = 0; // just changed
       changingVeh.mandatoryLCahead = false; // reset mandatory LC behaviour
 
-      //!!! get index of this.veh and splice this; otherwise probably no effect 
+      //!!! get index of this.veh and splice this; otherwise probably no effect
       //####################################################################
       this.veh.splice(iOrig, 1); // removes chg veh from orig.
       newRoad.veh.push(changingVeh); // appends changingVeh at last pos;
@@ -774,7 +795,7 @@ road.prototype.updateOrientation = function() {
 
 //######################################################################
 // update truck percentage by changing vehicle type of existing vehs
-// do not correct if minor mismatch 
+// do not correct if minor mismatch
 // since this can happen due to inflow/outflow
 // open roads: mismatchTolerated about 0.2; ring: mismatchTolerated=0
 //######################################################################
@@ -792,7 +813,7 @@ road.prototype.updateTruckFrac = function(truckFrac, mismatchTolerated) {
     }
     var truckFracReal = nTruck / n; // integer division results generally in double: OK!
 
-    // action if truck frac not as wanted; 
+    // action if truck frac not as wanted;
     // correct by one veh transformation per timestep
 
     if (Math.abs(truckFracReal - truckFrac) > mismatchTolerated) {
@@ -829,7 +850,7 @@ road.prototype.updateTruckFrac = function(truckFrac, mismatchTolerated) {
             }
           }
         }
-      } else { // change trucks->cars: transform truck with smallest space 
+      } else { // change trucks->cars: transform truck with smallest space
         var minSpace = 10000;
         for (var i = 0; i < n; i++) {
           if (this.veh[i].type == candidateType) {
@@ -882,7 +903,7 @@ road.prototype.updateDensity = function(density) {
       var success = false;
       var emptyLanes = false;
 
-      // initialize attributes of new vehicle 
+      // initialize attributes of new vehicle
       // (later overwritten in most cases)
 
       var laneNew = 0;
@@ -892,7 +913,7 @@ road.prototype.updateDensity = function(density) {
       var vehWidth = (vehType == "car") ? car_width : truck_width;
       var speedNew = 0; // always overwritten
 
-      // test if there are lanes w/o vehicles which will not be caught 
+      // test if there are lanes w/o vehicles which will not be caught
       // by main search for largest gap
 
       var nvehLane = [];
@@ -1034,7 +1055,7 @@ road.prototype.updateBCup = function(Qin, dt, route, availableLanes) {
     // }
     success = false;
 
-    // if road not empty or a truck could not be placed on the right lane 
+    // if road not empty or a truck could not be placed on the right lane
     // try, as well as for cars, if there is any lane with enough space
 
     if (!success) {
@@ -1048,7 +1069,7 @@ road.prototype.updateBCup = function(Qin, dt, route, availableLanes) {
         while ((iLead >= 0) && (this.veh[iLead].lane != candLane)) {
           iLead--;
         }
-        space = (iLead >= 0) // "minus candLine" implements right-driving 
+        space = (iLead >= 0) // "minus candLine" implements right-driving
           ? this.veh[iLead].u - this.veh[iLead].length : this.roadLen + candLane;
         if (space > spaceMax) {
           lane = candLane;
@@ -1087,7 +1108,7 @@ road.prototype.updateBCup = function(Qin, dt, route, availableLanes) {
 
 //######################################################################
 // get target vehicle neighbourhood/context for merging of other roads
-// returns targetVehicles, an array of all vehicles on the target lane 
+// returns targetVehicles, an array of all vehicles on the target lane
 // inside the arclength range [umin, umax].
 // Also sets iOffset, the first vehicle (smallest i) within range
 //######################################################################
@@ -1166,10 +1187,10 @@ road.prototype.updateModelsOfAllVehicles = function(longModelCar, longModelTruck
       } else { //no mandatory LC because obstacle, no offramps, mainroad route
         // (no need to reset LC models since this is done above)
         this.veh[i].longModel.alpha_v0 = 1;
-        //!!! works as links for all car longmodels or 
-        // truck longmodels of a road!! 
+        //!!! works as links for all car longmodels or
+        // truck longmodels of a road!!
         // DOS if reset here, all slow if not
-        // => logging of road.calcAccelerations 
+        // => logging of road.calcAccelerations
         // README set accel models individually (new?)
       }
 
@@ -1192,7 +1213,7 @@ road.prototype.updateLastLCtimes = function(dt) {
 // get direction of road at arclength u
 //######################################################################
 /**
-@param traj_x(u), traj_y(u)=phys. road geometry as parametrized 
+@param traj_x(u), traj_y(u)=phys. road geometry as parametrized
        function of the arc length
 @param u=actual arclength for which to get direction
 @return direction (heading) of the road (0=East, pi/2=North etc)
@@ -1218,7 +1239,7 @@ road.prototype.get_phi = function(traj_x, traj_y, u) {
 /**
 @param u=logical longitudinal coordinate (zero at beginning)
 @param v=logical transversal coordinate (zero at road center, towards right)
-@param traj_x(u), traj_y(u)=phys. road geometry as parametrized 
+@param traj_x(u), traj_y(u)=phys. road geometry as parametrized
        function of the arc length
 @param scale translates physical road coordinbates into pixel:[scale]=pixels/m
 @return x pixel coordinate
@@ -1235,7 +1256,7 @@ road.prototype.get_xPix = function(traj_x, traj_y, u, v, scale) {
 /**
 @param u=logical longitudinal coordinate (zero at beginning)
 @param v=logical transversal coordinate (zero at road center, towards right)
-@param traj_x(u), traj_y(u)=phys. road geometry as parametrized 
+@param traj_x(u), traj_y(u)=phys. road geometry as parametrized
        function of the arc length
 @param scale translates physical road coordinbates into pixel:[scale]=pixels/m
 @return y pixel coordinate
@@ -1268,7 +1289,7 @@ road.prototype.draw = function(roadImg, scale, traj_x, traj_y, laneWidth,
     var factor = 1 + this.nLanes * laneWidth * this.draw_curvMax; // "stitch factor"
     var lSegm = this.roadLen / this.draw_nSegm;
 
-    // lookup table only at beginning or after rescaling => 
+    // lookup table only at beginning or after rescaling =>
     // now condition in calling program !!! check onramp.js etc!
 
     if (changedGeometry) {
@@ -1322,13 +1343,13 @@ road.prototype.draw = function(roadImg, scale, traj_x, traj_y, laneWidth,
 
 /**
 @param scale: translates physical coordinbates into pixel:[scale]=pixels/m
-@param traj_x(u), traj_y(u): phys. road geometry 
+@param traj_x(u), traj_y(u): phys. road geometry
        as parameterized function of the arc length
-@param laneWidth: lane width in m 
-@param speedmin,speedmax: speed range [m/s] for the colormap 
+@param laneWidth: lane width in m
+@param speedmin,speedmax: speed range [m/s] for the colormap
        (red=slow,blue=fast)
-@param umin,umax: optional restriction of the long drawing range 
-       (useful when drawing veh only when fully entered 
+@param umin,umax: optional restriction of the long drawing range
+       (useful when drawing veh only when fully entered
        or re-drawing merging veh)
 @return draw into graphics context ctx (defined in calling routine)
 */
@@ -1368,7 +1389,7 @@ road.prototype.drawVehicles = function(carImg, truckImg, obstacleImg, scale,
       ctx.drawImage(vehImg, -0.5 * vehLenPix, -0.5 * vehWidthPix,
         vehLenPix, vehWidthPix);
 
-      // (2) draw semi-transp boxes of speed-dependent color 
+      // (2) draw semi-transp boxes of speed-dependent color
       //     over the images
       //     (different size of box because of mirrors of veh images)
 

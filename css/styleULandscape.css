@@ -1,5 +1,5 @@
 
-/* media queries: 
+/* media queries:
 https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries
 
 example: @media (min-width: 700px), handheld and (orientation: landscape) { ... }
@@ -11,15 +11,15 @@ handheld
 (monochrome)
 (color)
 (min-aspect-ratio: 1/1)  horiz/vertical
-limits: 
+limits:
 */
 
 /*#############################################################
- big landscape:   (min-width: 720px)  and (min-aspect-ratio: 6/5) 
- small landscape: (max-width: 719px)  and (min-aspect-ratio: 6/5) 
- big portrait:    (min-height: 600px) and (max-aspect-ratio: 6/5) 
- small portrait:  (max-height: 599px) and (max-aspect-ratio: 6/5) 
-ATTENTION!! no space before pixels! 
+ big landscape:   (min-width: 720px)  and (min-aspect-ratio: 6/5)
+ small landscape: (max-width: 719px)  and (min-aspect-ratio: 6/5)
+ big portrait:    (min-height: 600px) and (max-aspect-ratio: 6/5)
+ small portrait:  (max-height: 599px) and (max-aspect-ratio: 6/5)
+ATTENTION!! no space before pixels!
 #############################################################*/
 
 
@@ -91,7 +91,7 @@ button{
 
 /* (5) position of the copyright: left bottom of simCanvas */
 
-#impressum{ 
+#impressum{
   position: absolute;
   bottom: 0vmin;
   height: 2vmin;
@@ -109,17 +109,17 @@ button{
 
 
 TR{
-  font-size:2.2vmin; 
+  font-size:2.2vmin;
   color: #000000;
 }
 
 
-/* (6) most important sliders: demand variables such as Qin percTruck 
+/* (6) most important sliders: demand variables such as Qin percTruck
 /* and most important model parameters and action variables (speedlimit)*/
 
 #sliders1{ /* table elements relevant for font size */
   position: absolute;
-  top: 32vmin;
+  top: 50vmin;
   height: 13vmin;
   left: 40vmin;  /* calc( 24vw - 23vmin);*/
   width: 49vmin;
@@ -129,9 +129,9 @@ TR{
 
 /* (7) less important sliders; potentially dropped */
 
-#sliders2{ 
+#sliders2{
   position: absolute;
-  top: 50vmin;
+  top: 70vmin;
   height: 13vmin;
   left: 40vmin;
   width:  49vmin;
@@ -142,7 +142,7 @@ TR{
 
 /* (8) even less important: generally outside of main screen  */
 
-#sliders3{ 
+#sliders3{
   position: absolute;
   top: 93vmin;
   left: 40vmin;
@@ -170,7 +170,7 @@ TR{
 
 
 
-/* (9)-(11): image layout for "text arts" title images */ 
+/* (9)-(11): image layout for "text arts" title images */
 
 img.infoBlock{
     /*max-width: 90%;*/
@@ -202,7 +202,7 @@ img.infoBlock{
 }
 
 /* (11) position of the general link fields (often outside main area) */
- 
+
 #infoLinks{
   position: absolute;
   top:   85vmin;
@@ -228,7 +228,7 @@ div#track_timewarp, div#track_density, div#track_scale, div#track_truckFrac,div#
 }
 
 div#slider_timewarp, div#slider_density, div#slider_scale, div#slider_truckFrac,div#slider_qIn, div#slider_qOn, div#slider_fracOff, div#slider_speedL,div#slider_IDM_v0, div#slider_IDM_v0Up, div#slider_IDM_T,div#slider_IDM_s0, div#slider_IDM_a, div#slider_IDM_b{
-    height: 2.8vmin; 
+    height: 2.8vmin;
     width: 1.5vmin;
 }
 
@@ -242,7 +242,7 @@ button{
 
 
 TR{
-  font-size:2.8vmin; 
+  font-size:2.8vmin;
   color: #000000;
 }
 
@@ -256,7 +256,7 @@ TR{
 
 /* (7a-9a) */
 
-#sliders1{ 
+#sliders1{
   top: calc(34vmin - 3vw);
   height: 18vmin;
   left: 35vmin;
