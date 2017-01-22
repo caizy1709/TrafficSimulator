@@ -385,7 +385,9 @@ road.prototype.updateEnvironment = function() {
 
 road.prototype.calcAccelerations = function() {
   for (var i = 0; i < this.nveh; i++) {
-    if (this.veh[i].type == 'obstacle') { continue; };
+    if (this.veh[i].type == 'obstacle') {
+      continue;
+    };
     var iLead = this.veh[i].iLead;
     var s = this.veh[iLead].u - this.veh[iLead].length - this.veh[i].u;
     var speed = this.veh[i].speed;
@@ -472,23 +474,7 @@ road.prototype.updateSpeedPositions = function() {
 // toRight=true: tests/performs change to the right; otherwise to the left
 // returns true if change took place
 //######################################################################
-
 road.prototype.changeLanes = function() {
-  var randomBool = Math.random() >= 0.5;
-  if (randomBool) {
-    this.doChangesInDirection(1); // changes to right
-    this.doChangesInDirection(0); // changes to left
-  } else {
-    this.doChangesInDirection(0); // changes to left
-    this.doChangesInDirection(1); // changes to right
-  }
-}
-
-
-
-road.prototype.doChangesInDirection = function(toRight) {
-  var log = true;
-  var waitTime = 2 * dt_LC;
   //changeSuccessful=0; //return value; initially false
 
   // if (log && toRight) {
@@ -500,96 +486,183 @@ road.prototype.doChangesInDirection = function(toRight) {
 
   for (var i = 0; i < this.nveh; i++) {
 
-    // test if there is a target lane and if last change is sufficiently long ago
+    if (this.veh[i].type == 'obstacle') {
+      continue;
+    };
+    var newLane = this.chooseChangeLane(i);
+    if (newLane == 'stay') {
+      continue;
+    }
+    toRight = newLane == 'right';
+    var vehi = this.veh[i];
+  var iLead = vehi.iLead;
+  var iLag = vehi.iLag; // actually not used
+  var iLeadNew = (toRight) ? vehi.iLeadRight : vehi.iLeadLeft;
+  var iLagNew = (toRight) ? vehi.iLagRight : vehi.iLagLeft;
+  // if (!((this.veh[iLeadNew].dt_lastLC > waitTime) && (this.veh[iLagNew].dt_lastLC > waitTime))) {
+  //   return;
+  // }
+  var acc = vehi.acc;
+  var accLead = this.veh[iLead].acc;
+    var accLeadNew = this.veh[iLeadNew].acc; // leaders: exogen. for MOBIL
 
-    var newLane = (toRight) ? this.veh[i].lane + 1 : this.veh[i].lane - 1;
-    if ((newLane >= 0) && (newLane < this.nLanes) && (this.veh[i].dt_lastLC > waitTime)) {
+  var speed = vehi.speed;
+  var speedLead = this.veh[iLead].speed;
+  var speedLeadNew = this.veh[iLeadNew].speed;
+  var s = this.veh[iLead].u - this.veh[iLead].length - vehi.u;
+  var sNew = this.veh[iLeadNew].u - this.veh[iLeadNew].length - vehi.u;
+  var sLagNew = vehi.u - vehi.length - this.veh[iLagNew].u;
+  // calculate MOBIL input
 
-      var iLead = this.veh[i].iLead;
-      var iLag = this.veh[i].iLag; // actually not used
-      var iLeadNew = (toRight) ? this.veh[i].iLeadRight : this.veh[i].iLeadLeft;
-      var iLagNew = (toRight) ? this.veh[i].iLagRight : this.veh[i].iLagLeft;;
+  var vrel = vehi.speed / vehi.longModel.v0;
+  var accNew = vehi.longModel.calcAcc(sNew, speed, speedLeadNew, accLeadNew);
+  var speedLagNew = this.veh[iLagNew].speed;
+  // !!new follower assumes new acceleration of  changing veh
+  var accLagNew = this.veh[iLagNew].longModel.calcAcc(sLagNew, speedLagNew, speed, accNew);
 
-      // check if also the new leader/follower did not change recently
+  // treat case that no leader/no veh at all on target lane
 
-      //if ((this.veh[iLeadNew].dt_lastLC > waitTime) && (this.veh[iLagNew].dt_lastLC > waitTime)) {
-      if (true) {
-        var acc = this.veh[i].acc;
-        var accLead = this.veh[iLead].acc;
-        var accLeadNew = this.veh[iLeadNew].acc; // leaders: exogen. for MOBIL
-        var speed = this.veh[i].speed;
-        var speedLeadNew = this.veh[iLeadNew].speed;
-        var sNew = this.veh[iLeadNew].u - this.veh[iLeadNew].length - this.veh[i].u;
-        var sLagNew = this.veh[i].u - this.veh[i].length - this.veh[iLagNew].u;
+  if (iLeadNew >= i) { // if iLeadNew=i => laneNew is empty
+    if (this.isRing) {
+      sNew += this.roadLen;
+      sLagNew += this.roadLen;
 
-        // treat case that no leader/no veh at all on target lane
-
-        if (iLeadNew >= i) { // if iLeadNew=i => laneNew is empty
-          if (this.isRing) {
-            sNew += this.roadLen;
-          } // periodic BC
-          else {
-            sNew = 10000;
-          }
-        }
-
-        // treat case that no follower/no veh at all on target lane
-
-        if (iLagNew <= i) { // if iLagNew=i => laneNew is empty
-          if (this.isRing) {
-            sLagNew += this.roadLen;
-          } // periodic BC
-          else {
-            sLagNew = 10000;
-          }
-        }
-
-
-        // calculate MOBIL input
-
-        var vrel = this.veh[i].speed / this.veh[i].longModel.v0;
-        var accNew = this.veh[i].longModel.calcAcc(sNew, speed, speedLeadNew, accLeadNew);
-        var speedLagNew = this.veh[iLagNew].speed;
-        // !!new follower assumes new acceleration of  changing veh
-        var accLagNew = this.veh[iLagNew].longModel.calcAcc(sLagNew, speedLagNew, speed, accNew);
-
-        // final MOBIL incentive/safety test before actual lane change
-        // (regular lane changes; for merges, see below)
-
-        var MOBILOK = sNew === 10000 || this.veh[i].LCModel.realizeLaneChange(vrel, acc, accNew, accLagNew, toRight, false);
-
-        var changeSuccessful = (this.veh[i].type != "obstacle") && (sNew > 0) && (sLagNew > 0) && MOBILOK;
-        if (changeSuccessful) {
-
-          // do lane change in the direction toRight (left if toRight=0)
-          //!! only regular lane changes within road; merging/diverging separately!
-
-          this.veh[i].dt_lastLC = 0; // active LC
-          this.veh[iLagNew].dt_lastPassiveLC = 0; // passive LC
-          this.veh[iLeadNew].dt_lastPassiveLC = 0;
-          this.veh[iLead].dt_lastPassiveLC = 0;
-          this.veh[iLag].dt_lastLPassiveC = 0;
-
-          this.veh[i].laneOld = this.veh[i].lane;
-          this.veh[i].lane = newLane;
-          this.veh[i].acc = accNew;
-          this.veh[iLagNew].acc = accLagNew;
-
-          // optionally change acceleration of the old follower
-
-          if (log) {
-            console.log("after lane change! veh " + i + " from lane " + this.veh[i].laneOld + " to " + this.veh[i].lane + " ");
-          }
-
-          // update the local envionment implies 12 updates,
-          // better simply to update all ...
-
-          this.updateEnvironment();
-        }
-      }
+    } // periodic BC
+    else {
+      sNew = 10000;
+      sLagNew = 10000;
+      speedLeadNew = 10000;
     }
   }
+
+  //i is the only vehicle in the lane, or the first
+  if (iLead >= i) {
+    //a fake full speed lead car in distant future
+    s = 10000;
+    speedLead = vehi.longModel.v0;
+  }
+    // do lane change in the direction toRight (left if toRight=0)
+    //!! only regular lane changes within road; merging/diverging separately!
+
+    vehi.dt_lastLC = 0; // active LC
+    this.veh[iLagNew].dt_lastPassiveLC = 0; // passive LC
+    this.veh[iLeadNew].dt_lastPassiveLC = 0;
+    this.veh[iLead].dt_lastPassiveLC = 0;
+    this.veh[iLag].dt_lastLPassiveC = 0;
+
+    vehi.laneOld = vehi.lane;
+    vehi.lane = newLane;
+    vehi.acc = accNew;
+    this.veh[iLagNew].acc = accLagNew;
+
+    // optionally change acceleration of the old follower
+
+    if (false) {
+      console.log("after lane change! veh " + i + " from lane " + vehi.laneOld + " to " + vehi.lane + " ");
+    }
+
+    // update the local envionment implies 12 updates,
+    // better simply to update all ...
+
+    this.updateEnvironment();
+  }
+
+
+
   //return changeSuccessful;
+}
+
+/**
+if dict.left and dict.right are all 1
+return 'stay'
+*/
+road.prototype.chooseChangeLane = function(i) {
+    var dict = {
+        'left': this.congestion(i, 0),
+        'stay': 0.99,
+        'right': this.congestion(i, 1)
+      }
+      //return key of the min value
+    return Object.keys(dict).reduce(function(a, b) {
+      return dict[a] < dict[b] ? a : b
+    });
+  }
+  /**
+  congestion:
+  1 for fully congested / cannot change to this lane
+  0-1 value: smaller is smoother
+  */
+road.prototype.congestion = function(i, toRight) {
+  waitTime = 2 * dt_LC;
+  var vehi = this.veh[i];
+  var newLane = (toRight) ? vehi.lane + 1 : vehi.lane - 1;
+
+  if (!((newLane >= 0) && (newLane < this.nLanes) && (vehi.dt_lastLC > waitTime))) {
+    return 1;
+  }
+
+  var iLead = vehi.iLead;
+  var iLag = vehi.iLag; // actually not used
+  var iLeadNew = (toRight) ? vehi.iLeadRight : vehi.iLeadLeft;
+  var iLagNew = (toRight) ? vehi.iLagRight : vehi.iLagLeft;
+  // if (!((this.veh[iLeadNew].dt_lastLC > waitTime) && (this.veh[iLagNew].dt_lastLC > waitTime))) {
+  //   return;
+  // }
+  var acc = vehi.acc;
+  var accLead = this.veh[iLead].acc;
+  var accLeadNew = this.veh[iLeadNew].acc; // leaders: exogen. for MOBIL
+  var speed = vehi.speed;
+  var speedLead = this.veh[iLead].speed;
+  var speedLeadNew = this.veh[iLeadNew].speed;
+  var s = this.veh[iLead].u - this.veh[iLead].length - vehi.u;
+  var sNew = this.veh[iLeadNew].u - this.veh[iLeadNew].length - vehi.u;
+  var sLagNew = vehi.u - vehi.length - this.veh[iLagNew].u;
+
+  // treat case that no leader/no veh at all on target lane
+
+  if (iLeadNew >= i) { // if iLeadNew=i => laneNew is empty
+    if (this.isRing) {
+      sNew += this.roadLen;
+      sLagNew += this.roadLen;
+
+    } // periodic BC
+    else {
+      sNew = 10000;
+      sLagNew = 10000;
+      speedLeadNew = 10000;
+    }
+  }
+
+  //i is the only vehicle in the lane, or the first
+  if (iLead >= i) {
+    //a fake full speed lead car in distant future
+    s = 10000;
+    speedLead = vehi.longModel.v0;
+  }
+  // calculate MOBIL input
+
+  var vrel = vehi.speed / vehi.longModel.v0;
+
+  var accNew = vehi.longModel.calcAcc(sNew, speed, speedLeadNew, accLeadNew);
+  var speedLagNew = this.veh[iLagNew].speed;
+  // !!new follower assumes new acceleration of  changing veh
+  var accLagNew = this.veh[iLagNew].longModel.calcAcc(sLagNew, speedLagNew, speed, accNew);
+
+  //function(v, v0, dist, distNew, leadv, leadvNew)
+  var shouldChangeLane = vehi.LCModel.shouldChangeLane(
+    speed,
+    vehi.longModel.v0,
+    s,
+    sNew,
+    speedLead,
+    speedLeadNew
+  );
+  if (!shouldChangeLane) return 1;
+  var MOBILOK = vehi.LCModel.realizeLaneChange(vrel, acc, accNew, accLagNew, toRight, false);
+  if (!MOBILOK && (sNew > 0) && (sLagNew > 0)) {
+    return 1;
+  }
+  return vehi.LCModel.congestion(s, speedLeadNew / speedLead);
 }
 
 //END NEW 25.06.2016
@@ -993,7 +1066,7 @@ road.prototype.updateBCdown = function() {
   var nvehOld = this.nveh;
   if ((!this.isRing) && (this.veh.length > 0)) {
     if (this.veh[0].u > this.roadLen) {
-      console.log("road.updateBCdown: nveh="+this.nveh+" removing one vehicle");
+      console.log("road.updateBCdown: nveh=" + this.nveh + " removing one vehicle");
       this.veh.splice(0, 1);
       this.nveh--;
     }

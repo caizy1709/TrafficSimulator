@@ -211,6 +211,10 @@ function MOBIL(bSafe, bSafeMax, bThr, bBiasRight){
     this.bThr=bThr;
     this.bBiasRight=bBiasRight;
     this.bSafeMax=bSafeMax; //!!! transfer into arg list of cstr later on
+
+    this.vrelThr = 0.9;
+    this.distThr = 300;
+    this.congestThr = 0.1;
     //this.p=p; 
 
 
@@ -250,5 +254,31 @@ function MOBIL(bSafe, bSafeMax, bThr, bBiasRight){
 	  if(dacc>0){console.log("  positive MOBIL LC decision!");}
 	}	
 	return (dacc>0);
+    }
+
+    /**
+    decide whether should attempt to change the lane.
+    change lane only if 
+    1. current vrel is low, and
+    2. congestion in this lane is over the threshold, and
+    3. congestion of the new lane is smaller than current lane
+    */
+    MOBIL.prototype.shouldChangeLane = function(v, v0, dist, distNew, leadv, leadvNew) {
+    	if (v / v0 > this.vrelThr) {return false;}
+    	currCongestion = this.congestion(dist, leadv / v0);
+    	if (currCongestion < this.congestThr) { return false;}
+    	newCongestion = this.congestion(distNew, leadvNew / v0);
+    	return newCongestion < currCongestion;
+    }
+
+    MOBIL.prototype.congestion = function(dist, persp_vrel) {
+    	//if lead car is far away or quick enough, no congestion
+    	if (dist > this.distThr || persp_vrel > this.vrelThr) {
+    		return 0; 
+    	}
+    	 // == 1 if persp_vrel == 0 || dist == 0
+    	 // smaller if persp_vrel or dist small
+    	 // linear interploration
+    	 return (1 - dist / this.distThr) * (1 - persp_vrel / this.vrelThr);
     }
 }
