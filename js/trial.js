@@ -29,7 +29,7 @@ var dt = 0.5; // only initialization
 // physical geometry settings [m]
 
 var mainroadLen = 1770;
-var nLanes = 4;
+var nLanes = 8;
 var laneWidth = 7;
 // var spawnLanes = [3, 4, 5, 6];
 
@@ -41,82 +41,88 @@ var endToll = 400;
 var laneRoadworks = 
   [
     [
-      [0, 1], beginUL
+      [0, 1, 6,7], beginUL
     ],
     [
-      [0, 1], beginUL - lenRoadworkElement
+      [0, 1, 6,7], beginUL - lenRoadworkElement
     ],
     [
-      [0, 1], beginUL - 2 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 2 * lenRoadworkElement
     ],
     [
-      [0, 1], beginUL - 3 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 3 * lenRoadworkElement
     ],
     [
-      [0, 1], beginUL - 4 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 4 * lenRoadworkElement
     ],
     [
-      [0, 1], beginUL - 5 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 5 * lenRoadworkElement
     ],
     [
-      [0, 1], beginUL - 6 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 6 * lenRoadworkElement
     ],
     [
-      [0, 1], beginUL - 7 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 7 * lenRoadworkElement
     ],
     [
-      [0, 1], beginUL - 8 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 8 * lenRoadworkElement
     ],
     [
-      [0, 1], beginUL - 9 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 9 * lenRoadworkElement
     ],
     [
-      [0, 1], beginUL - 10 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 10 * lenRoadworkElement
     ],
     [
-      [0, 1], beginUL - 11 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 11 * lenRoadworkElement
     ],
     [
-      [0, 1], beginUL - 12 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 12 * lenRoadworkElement
     ],
     [
-      [0, 1], beginUL - 13 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 13 * lenRoadworkElement
     ],
     [
-      [0, 1], beginUL - 14 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 14 * lenRoadworkElement
     ],
     [
-      [0, 1], beginUL - 15 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 15 * lenRoadworkElement
     ],
     [
-      [0, 1], beginUL - 16 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 16 * lenRoadworkElement
     ],
     [
-      [0, 1], beginUL - 17 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 17 * lenRoadworkElement
     ],
     [
-      [0, 1], beginUL - 18 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 18 * lenRoadworkElement
     ],
     [
-      [0], beginUL - 19 * lenRoadworkElement
+      [0,7], beginUL - 19 * lenRoadworkElement
     ],
     [
-      [0], beginUL - 20 * lenRoadworkElement
+      [0,7], beginUL - 20 * lenRoadworkElement
     ],
     [
-      [0], beginUR
+      [0,7], beginUR - 3 * lenRoadworkElement
     ],
     [
-      [0], beginUR + lenRoadworkElement
+      [0,7], beginUR - 2 * lenRoadworkElement
     ],
     [
-      [0], beginUR + lenRoadworkElement
+      [0,7], beginUR - 1 * lenRoadworkElement
     ],
     [
-      [0, 1], beginUR + 2 * lenRoadworkElement
+      [0,7], beginUR
     ],
     [
-      [0, 1], beginUR + 3 * lenRoadworkElement
+      [0,7], beginUR + lenRoadworkElement
+    ],
+    [
+      [0, 1, 6,7], beginUR + 2 * lenRoadworkElement
+    ],
+    [
+      [0, 1, 6,7], beginUR + 3 * lenRoadworkElement
     ],
   ]
 
@@ -141,8 +147,8 @@ var truck_width = 7;
 var MOBIL_bSafe = 8; // was 12
 var MOBIL_bSafeMax = 16;
 var MOBIL_bThr = 0.1;
-var MOBIL_bBiasRight_car = 0.2; // four times for trucks (roadworks_gui.js)
-var MOBIL_bBiasRight_truck = 0.5; // four times for trucks (roadworks_gui.js)
+var MOBIL_bBiasRight_car = 0;//0.2; // four times for trucks (roadworks_gui.js)
+var MOBIL_bBiasRight_truck = 0;//0.5; // four times for trucks (roadworks_gui.js)
 
 var MOBIL_mandat_bSafe = 6;
 var MOBIL_mandat_bSafeMax = 20;
@@ -339,7 +345,10 @@ function updateU() {
   //   LCModelCarToll, LCModelTruckToll);
 
   // do central simulation update of vehicles
-
+  // beginMandatoryLC = beginUR - 5 * lenRoadworkElement;
+  // endMandatoryLC = beginUR + 5 * lenRoadworkElement;
+  // mainroad.setLCMandatoryInLanes(beginMandatoryLC, endMandatoryLC, true, [0,1]);
+  // mainroad.setLCMandatoryInLanes(beginMandatoryLC, endMandatoryLC, false, [6,7]);
   mainroad.updateLastLCtimes(dt);
   mainroad.calcAccelerations();
   mainroad.changeLanes();

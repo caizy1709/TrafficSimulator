@@ -212,6 +212,17 @@ road.prototype.setLCMandatory=function(umin,umax,toRight){
 	}
     }
 }
+road.prototype.setLCMandatoryInLanes=function(umin,umax,toRight, lanes){
+    for(var i=0; i<this.veh.length; i++){
+  var u=this.veh[i].u;
+  if((u>umin)&&(u<umax) && lanes.indexOf(this.veh[i].lane) != -1){
+      this.veh[i].mandatoryLCahead=true;
+      this.veh[i].toRight=toRight;
+      this.veh[i].LCModel=(toRight) 
+    ? this.LCModelMandatoryRight : this.LCModelMandatoryLeft;
+  }
+    }
+}
 
 //#####################################################
 // sort vehicles into descending arc-length positions u 

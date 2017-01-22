@@ -35,7 +35,7 @@ var scale=scaleInit;
 var scale_min=0.6;
 var scale_max=5;
 
-var truckFracInit=0.2;
+var truckFracInit=0;
 var truckFrac=truckFracInit;
 var truckFrac_min=0;
 var truckFrac_max=0.5;
