@@ -1,5 +1,7 @@
-
-// general comments: ring.js, offramp.js (responsive design)
+//todo:
+//1. how to make a 4-8-4 lanes from onramp.js
+//2. how to force a slow down to simulate passing toll plaza from uphill.js
+//3. tweak gui to allow higher influx
 
 
 //#############################################################
@@ -27,13 +29,18 @@ var dt=0.5; // only initialization
 // physical geometry settings [m]
 
 var mainroadLen=770;
-var nLanes=2;
+var nLanes=8;
 var laneWidth=7;
+var spawnLanes = [3,4];
 
-var uBeginRoadworks=450;
-var uEndRoadworks=550;
-var laneRoadwork=0;  // 0=left
 var lenRoadworkElement=10;
+var beginU = 200;
+var laneRoadworks=
+[
+    [[0,7],beginU],
+    [[0,1,6,7],beginU + lenRoadworkElement],
+    [[0,1,2,5,6,7],beginU + 2 * lenRoadworkElement],
+]
 
 var straightLen=0.34*mainroadLen;      // straight segments of U
 var arcLen=mainroadLen-2*straightLen; // length of half-circe arc of U
@@ -117,17 +124,17 @@ var longModelTruck;
 var LCModelCar;
 var LCModelTruck;
 var LCModelMandatoryRight=new MOBIL(MOBIL_mandat_bSafe, MOBIL_mandat_bSafeMax,
-				    MOBIL_mandat_bThr, MOBIL_mandat_bias);
+                    MOBIL_mandat_bThr, MOBIL_mandat_bias);
 var LCModelMandatoryLeft=new MOBIL(MOBIL_mandat_bSafe, MOBIL_mandat_bSafeMax,
-				   MOBIL_mandat_bThr, -MOBIL_mandat_bias);
+                   MOBIL_mandat_bThr, -MOBIL_mandat_bias);
 
 updateModels(); 
-				      // LCModelCar,LCModelTruck);
+                      // LCModelCar,LCModelTruck);
 
 var isRing=0;  // 0: false; 1: true
 var roadID=1;
 var mainroad=new road(roadID, mainroadLen, nLanes, densityInit, speedInit, 
-		      truckFracInit, isRing);
+              truckFracInit, isRing);
 
 mainroad.LCModelMandatoryRight=LCModelMandatoryRight; //unique mandat LC model
 mainroad.LCModelMandatoryLeft=LCModelMandatoryLeft; //unique mandat LC model
@@ -139,18 +146,27 @@ mainroad.LCModelMandatoryLeft=LCModelMandatoryLeft; //unique mandat LC model
 //#########################################################
 
 // number of virtual "roadwork" vehicles
+//ry: these piece of code is used for addding roadwork
+//by adding a car that do not move
+//other cars would try to avoid it
+
 
 var longModelObstacle=new ACC(0,IDM_T,IDM_s0,0,IDM_b);
 var LCModelObstacle=new MOBIL(MOBIL_bSafe,MOBIL_bSafe,1000,MOBIL_bBiasRight_car);
-var nr=Math.round((uEndRoadworks-uBeginRoadworks)/lenRoadworkElement);
 
-for (var ir=0; ir<nr; ir++){
-    var u=uBeginRoadworks+(ir+0.5)*lenRoadworkElement;
-    var virtualStandingVeh=new vehicle(lenRoadworkElement, laneWidth, 
-					u,laneRoadwork, 0, "obstacle");
-     virtualStandingVeh.longModel=longModelObstacle;
-     virtualStandingVeh.LCModel=LCModelObstacle;
-     mainroad.veh.push(virtualStandingVeh); // append; prepend=unshift
+for (var i = 0; i < laneRoadworks.length; i++) {
+    var lanes = laneRoadworks[i][0];
+    var beginPos = laneRoadworks[i][1];
+    for (var j = 0; j < lanes.length; j++) {
+        lane = lanes[j];
+        console.log("roadwork in lane "+lane)
+        var u = beginPos + lenRoadworkElement;
+        var virtualStandingVeh=new vehicle(lenRoadworkElement, laneWidth, 
+                        u,lane, 0, "obstacle");
+         virtualStandingVeh.longModel=longModelObstacle;
+         virtualStandingVeh.LCModel=LCModelObstacle;
+         mainroad.veh.push(virtualStandingVeh); // append; prepend=unshift
+    };
 }
 
 // put roadwork obstacles at right place and let vehicles get context of them 
@@ -159,17 +175,17 @@ mainroad.sortVehicles();
 mainroad.updateEnvironment();
 
 
-     if(false){
+if(false){
         console.log("\nmainroad.nveh="+mainroad.nveh);
-	for(var i=0; i<mainroad.veh.length; i++){
-	    console.log("i="+i
-			+" mainroad.veh[i].type="+mainroad.veh[i].type
-			+" mainroad.veh[i].u="+mainroad.veh[i].u
-			+" mainroad.veh[i].v="+mainroad.veh[i].v
-			+" mainroad.veh[i].lane="+mainroad.veh[i].lane
-			+" mainroad.veh[i].laneOld="+mainroad.veh[i].laneOld);
-	}
-	console.log("\n");
+    for(var i=0; i<mainroad.veh.length; i++){
+        console.log("i="+i
+            +" mainroad.veh[i].type="+mainroad.veh[i].type
+            +" mainroad.veh[i].u="+mainroad.veh[i].u
+            +" mainroad.veh[i].v="+mainroad.veh[i].v
+            +" mainroad.veh[i].lane="+mainroad.veh[i].lane
+            +" mainroad.veh[i].laneOld="+mainroad.veh[i].laneOld);
+    }
+    console.log("\n");
 }
 
 
@@ -200,20 +216,20 @@ function updateU(){
     // the same model) 
 
     if(false){
-	console.log("longModelCar.speedlimit="+longModelCar.speedlimit
-		    +" longModelCar.v0="+longModelCar.v0
-		    +" longModelTruck.speedlimit="+longModelTruck.speedlimit
-		    +" longModelTruck.v0="+longModelTruck.v0);
+    console.log("longModelCar.speedlimit="+longModelCar.speedlimit
+            +" longModelCar.v0="+longModelCar.v0
+            +" longModelTruck.speedlimit="+longModelTruck.speedlimit
+            +" longModelTruck.v0="+longModelTruck.v0);
     }
     mainroad.updateTruckFrac(truckFrac, truckFracToleratedMismatch);
     mainroad.updateModelsOfAllVehicles(longModelCar,longModelTruck,
-				       LCModelCar,LCModelTruck);
+                       LCModelCar,LCModelTruck);
 
     // externally impose mandatory LC behaviour
     // all left-lane vehicles must change lanes to the right
     // starting at 0 up to the position uBeginRoadworks
 
-    //mainroad.setLCMandatory(0, uBeginRoadworks, true);
+    // mainroad.setLCMandatory(0, uBeginRoadworks, true);
 
 
     // do central simulation update of vehicles
@@ -223,16 +239,16 @@ function updateU(){
     mainroad.changeLanes();         
     mainroad.updateSpeedPositions();
     mainroad.updateBCdown();
-    mainroad.updateBCup(qIn,dt); // argument=total inflow
+    mainroad.updateBCup(qIn,dt, undefined, spawnLanes); // argument=total inflow
 
     if(true){
-	for (var i=0; i<mainroad.nveh; i++){
-	    if(mainroad.veh[i].speed<0){
-		console.log("speed "+mainroad.veh[i].speed
-			    +" of mainroad vehicle "
-			    +i+" is negative!");
-	    }
-	}
+    for (var i=0; i<mainroad.nveh; i++){
+        if(mainroad.veh[i].speed<0){
+        console.log("speed "+mainroad.veh[i].speed
+                +" of mainroad vehicle "
+                +i+" is negative!");
+        }
+    }
     }
 
 
@@ -241,15 +257,15 @@ function updateU(){
 
     if(false){
         console.log("\nafter updateU: itime="+itime+" mainroad.nveh="+mainroad.nveh);
-	for(var i=0; i<mainroad.veh.length; i++){
-	    if(mainroad.veh[i].type != "obstacle"){
-	      console.log("i="+i+" mainroad.veh[i].u="+mainroad.veh[i].u
-			+" type="+mainroad.veh[i].type
-			+" speedlimit="+mainroad.veh[i].longModel.speedlimit
-			+" speed="+mainroad.veh[i].speed);
-	    }
-	}
-	console.log("\n");
+    for(var i=0; i<mainroad.veh.length; i++){
+        if(mainroad.veh[i].type != "obstacle"){
+          console.log("i="+i+" mainroad.veh[i].u="+mainroad.veh[i].u
+            +" type="+mainroad.veh[i].type
+            +" speedlimit="+mainroad.veh[i].longModel.speedlimit
+            +" speed="+mainroad.veh[i].speed);
+        }
+    }
+    console.log("\n");
     }
 
 }//updateU
@@ -274,11 +290,11 @@ function drawU() {
     var simDivWindow=document.getElementById("contents");
 
     if (canvas.width!=simDivWindow.clientWidth){
-	hasChanged=true;
-	canvas.width  = simDivWindow.clientWidth;
+    hasChanged=true;
+    canvas.width  = simDivWindow.clientWidth;
     }
     if (canvas.height != simDivWindow.clientHeight){
-	hasChanged=true;
+    hasChanged=true;
         canvas.height  = simDivWindow.clientHeight;
     }
     var aspectRatio=canvas.width/canvas.height;
@@ -303,9 +319,9 @@ function drawU() {
 
       scale=refSizePix/sizePhys; 
       if(true){
-	console.log("canvas has been resized: new dim ",
-		    canvas.width,"X",canvas.height," refSizePix=",
-		    refSizePix," sizePhys=",sizePhys," scale=",scale);
+    console.log("canvas has been resized: new dim ",
+            canvas.width,"X",canvas.height," refSizePix=",
+            refSizePix," sizePhys=",sizePhys," scale=",scale);
       }
     }
 
@@ -315,19 +331,11 @@ function drawU() {
    // the arc length u
 
     function traj_x(u){ // physical coordinates
-        var dxPhysFromCenter= // left side (median), phys coordinates
-	    (u<straightLen) ? straightLen-u
-	  : (u>straightLen+arcLen) ? u-mainroadLen+straightLen
-	  : -arcRadius*Math.sin((u-straightLen)/arcRadius);
-	return center_xPhys+dxPhysFromCenter;
+        return u / mainroadLen * canvas.width;
     }
 
     function traj_y(u){ // physical coordinates
-        var dyPhysFromCenter=
- 	    (u<straightLen) ? arcRadius
-	  : (u>straightLen+arcLen) ? -arcRadius
-	  : arcRadius*Math.cos((u-straightLen)/arcRadius);
-	return center_yPhys+dyPhysFromCenter;
+        return center_yPhys * 0.7;
     }
 
 
@@ -344,7 +352,7 @@ function drawU() {
 
     ctx.setTransform(1,0,0,1,0,0); 
     if(drawBackground){
-	if(hasChanged||(itime<=1) || false || (!drawRoad)){ 
+    if(hasChanged||(itime<=1) || false || (!drawRoad)){ 
           ctx.drawImage(background,0,0,canvas.width,canvas.height);
       }
     }
@@ -362,7 +370,7 @@ function drawU() {
     // (4) draw vehicles
 
     mainroad.drawVehicles(carImg,truckImg,obstacleImg,scale,traj_x,traj_y,
-			  laneWidth, vmin, vmax);
+              laneWidth, vmin, vmax);
 
 
 
@@ -381,10 +389,10 @@ function drawU() {
 
     ctx.fillStyle="rgb(255,255,255)";
     ctx.fillRect(timeStr_xlb,timeStr_ylb-timeStr_height,
-		 timeStr_width,timeStr_height);
+         timeStr_width,timeStr_height);
     ctx.fillStyle="rgb(0,0,0)";
     ctx.fillText(timeStr, timeStr_xlb+0.2*textsize,
-		 timeStr_ylb-0.2*textsize);
+         timeStr_ylb-0.2*textsize);
 
     
    
@@ -395,10 +403,10 @@ function drawU() {
     var scaleStr_height=1.2*textsize;
     ctx.fillStyle="rgb(255,255,255)";
     ctx.fillRect(scaleStr_xlb,scaleStr_ylb-scaleStr_height,
-		 scaleStr_width,scaleStr_height);
+         scaleStr_width,scaleStr_height);
     ctx.fillStyle="rgb(0,0,0)";
     ctx.fillText(scaleStr, scaleStr_xlb+0.2*textsize, 
-		 scaleStr_ylb-0.2*textsize);
+         scaleStr_ylb-0.2*textsize);
     
 /*
 
@@ -409,10 +417,10 @@ function drawU() {
     var timewStr_height=1.2*textsize;
     ctx.fillStyle="rgb(255,255,255)";
     ctx.fillRect(timewStr_xlb,timewStr_ylb-timewStr_height,
-		 timewStr_width,timewStr_height);
+         timewStr_width,timewStr_height);
     ctx.fillStyle="rgb(0,0,0)";
     ctx.fillText(timewStr, timewStr_xlb+0.2*textsize,
-		 timewStr_ylb-0.2*textsize);
+         timewStr_ylb-0.2*textsize);
     
  
     var genVarStr="truckFrac="+Math.round(100*truckFrac)+"\%";
@@ -422,10 +430,10 @@ function drawU() {
     var genVarStr_height=1.2*textsize;
     ctx.fillStyle="rgb(255,255,255)";
     ctx.fillRect(genVarStr_xlb,genVarStr_ylb-genVarStr_height,
-		 genVarStr_width,genVarStr_height);
+         genVarStr_width,genVarStr_height);
     ctx.fillStyle="rgb(0,0,0)";
     ctx.fillText(genVarStr, genVarStr_xlb+0.2*textsize, 
-		 genVarStr_ylb-0.2*textsize);
+         genVarStr_ylb-0.2*textsize);
     
 
     var genVarStr="qIn="+Math.round(3600*qIn)+"veh/h";
@@ -435,10 +443,10 @@ function drawU() {
     var genVarStr_height=1.2*textsize;
     ctx.fillStyle="rgb(255,255,255)";
     ctx.fillRect(genVarStr_xlb,genVarStr_ylb-genVarStr_height,
-		 genVarStr_width,genVarStr_height);
+         genVarStr_width,genVarStr_height);
     ctx.fillStyle="rgb(0,0,0)";
     ctx.fillText(genVarStr, genVarStr_xlb+0.2*textsize, 
-		 genVarStr_ylb-0.2*textsize);
+         genVarStr_ylb-0.2*textsize);
 
 */
 
@@ -448,7 +456,7 @@ function drawU() {
     drawColormap(0.22*refSizePix,
                  0.43*refSizePix,
                  0.1*refSizePix, 0.2*refSizePix,
-		 vmin,vmax,0,100/3.6);
+         vmin,vmax,0,100/3.6);
 
 
     // revert to neutral transformation at the end!
@@ -476,13 +484,13 @@ function init() {
     obstacleImg = new Image();
     obstacleImg.src = obstacle_srcFile;
 
-	// init road image(s)
+    // init road image(s)
 
     roadImg = new Image();
     roadImg.src=(nLanes==1)
-	? road1lane_srcFile
-	: (nLanes==2) ? road2lanes_srcFile
-	: road3lanes_srcFile;
+    ? road1lane_srcFile
+    : (nLanes==2) ? road2lanes_srcFile
+    : road3lanes_srcFile;
     rampImg = new Image();
     rampImg.src=ramp_srcFile;
 

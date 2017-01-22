@@ -28,7 +28,7 @@ var center_yPhys=-150; // ypixel downwards=> physical center <0
 
 var roadRadius=120; // 90 change scaleInit in gui.js correspondingly
 var roadLen=roadRadius*2*Math.PI;
-var nLanes=3;
+var nLanes=6;
 var laneWidth=10;
 
 // specification of vehicle and traffic  properties
