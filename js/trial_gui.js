@@ -11,13 +11,13 @@
 // deshalb separate gui fuer jedes html noetig
 // das generelle "gui.js" bietet Sammlung fuer alles und ist Referenz
 // ACHTUNG weiterer BUG: die sliderWidth wird zwar optisch dem responsive
-// design angepasst, der Knopf laesst sich aber immer bis zur anfaengl. Weite 
-// bewegen, also nicht zum Ende bei Vergroesserung, 
-// darueber hinaus bei Verkleinerung 
+// design angepasst, der Knopf laesst sich aber immer bis zur anfaengl. Weite
+// bewegen, also nicht zum Ende bei Vergroesserung,
+// darueber hinaus bei Verkleinerung
 //#############################################
 
 
-// geometry of sliders; only nonzero initialization; 
+// geometry of sliders; only nonzero initialization;
 // will be overridden in update method of main js file if hasChanged=true
 
 var sliderWidth=100; // max value reached if slider at sliderWidth
@@ -25,10 +25,10 @@ var sliderWidth=100; // max value reached if slider at sliderWidth
 
 // controlled contents of sliders
 
-var timewarpInit=8;
+var timewarpInit=100;
 var timewarp=timewarpInit;
 var timewarp_min=0.1;
-var timewarp_max=20;
+var timewarp_max=100;
 
 var scaleInit=2.4;  // pixel/m
 var scale=scaleInit;
@@ -40,12 +40,12 @@ var truckFrac=truckFracInit;
 var truckFrac_min=0;
 var truckFrac_max=0.5;
 
-var qInInit=0.4; // total inflow [veh/s] 
+var qInInit=0.4; // total inflow [veh/s]
 var qIn=qInInit;
 var qIn_min=0;
 var qIn_max=0.7;
 
-var speedLInit=80/3.6; // speed limit for all vehicles 
+var speedLInit=80/3.6; // speed limit for all vehicles
 var speedL=speedLInit;
 var speedL_min=80/3.6;
 var speedL_max=160/3.6;
@@ -57,17 +57,17 @@ var IDM_v0_min=5;
 var IDM_v0_max=50;
 
 
-var IDM_TInit=1.5; 
+var IDM_TInit=1.5;
 var IDM_T=IDM_TInit;
 var IDM_T_min=0.6;
 var IDM_T_max=3;
 
-var IDM_s0Init=2; 
+var IDM_s0Init=2;
 var IDM_s0=IDM_s0Init;
 var IDM_s0_min=0.5;
 var IDM_s0_max=5;
 
-var IDM_aInit=0.3; 
+var IDM_aInit=0.3;
 var IDM_a=IDM_aInit;
 var IDM_a_min=0.3;
 var IDM_a_max=3;
@@ -82,19 +82,19 @@ var factor_a_truck=1.0;
 var factor_T_truck=1.0;
 
 function updateModels(){
-    var v0_truck=180/3.6;  // restricted by speedL_truck anyway; 
+    var v0_truck=180/3.6;  // restricted by speedL_truck anyway;
                            // set v0 > 80/3.6 to make them less sluggish
     var T_truck=factor_T_truck*IDM_T;
     var a_truck=factor_a_truck*IDM_a;
 
-    // var longModelCar etc defined (w/o value) in roadworks.js 
-    // var MOBIL_bBiasRight and other MOBIL params defined in roadworks.js 
+    // var longModelCar etc defined (w/o value) in roadworks.js
+    // var MOBIL_bBiasRight and other MOBIL params defined in roadworks.js
 
     longModelCar=new ACC(IDM_v0,IDM_T,IDM_s0,IDM_a,IDM_b);
     longModelCar.speedlimit=speedL;
     longModelTruck=new ACC(v0_truck,T_truck,IDM_s0,a_truck,IDM_b);
     longModelTruck.speedlimit=Math.min(speedL, speedL_truck);
-    LCModelCar=new MOBIL(MOBIL_bSafe, MOBIL_bSafeMax, 
+    LCModelCar=new MOBIL(MOBIL_bSafe, MOBIL_bSafeMax,
              MOBIL_bThr, MOBIL_bBiasRight_car);
     LCModelTruck=new MOBIL(MOBIL_bSafe, MOBIL_bSafeMax,
                MOBIL_bThr, MOBIL_bBiasRight_truck);
@@ -112,7 +112,7 @@ function updateModels(){
 
 var isStopped=false; // only initialization
 
-function myStartStopFunction(){ 
+function myStartStopFunction(){
 
     clearInterval(myRun);
     console.log("in myStartStopFunction: isStopped=",isStopped);
@@ -131,13 +131,13 @@ function myStartStopFunction(){
 
 
 //#############################################
-// Timewarp slider 
-// names 'slider_timewarp' etc defined in html file 
+// Timewarp slider
+// names 'slider_timewarp' etc defined in html file
 // and formatted in sliders.css
 //#############################################
 
 DYN_WEB.Event.domReady( function() {
-    var slider_timewarp 
+    var slider_timewarp
         = new DYN_WEB.Slider('slider_timewarp', 'track_timewarp', 'h');
 
     // callback
@@ -155,16 +155,16 @@ DYN_WEB.Event.domReady( function() {
 
 function change_timewarp(xSlider){
     timewarp=timewarp_min
-    +(timewarp_max-timewarp_min)*xSlider/sliderWidth; 
+    +(timewarp_max-timewarp_min)*xSlider/sliderWidth;
     dt=timewarp/fps;
 }
 function get_timewarp(){return timewarp;}
 
-// inverse function of change_timewarp; 
+// inverse function of change_timewarp;
 // timewarp displayed on html at start of html page
 
 function change_timewarpSliderPos(x){ // callback action of slider movement
-    var xSlider=sliderWidth 
+    var xSlider=sliderWidth
     *(x-timewarp_min)/(timewarp_max-timewarp_min);
     document.getElementById('valueField_timewarp').innerHTML
            =parseFloat(x,10).toFixed(1)+" times";
@@ -178,7 +178,7 @@ function change_timewarpSliderPos(x){ // callback action of slider movement
 //#############################################
 
 DYN_WEB.Event.domReady( function() {
-    var slider_truckFrac 
+    var slider_truckFrac
         = new DYN_WEB.Slider('slider_truckFrac', 'track_truckFrac', 'h');
     slider_truckFrac.on_move = function(x,y) {
         change_truckFrac(x);
@@ -208,7 +208,7 @@ function change_truckFracSliderPos(truckFrac){
 //#############################################
 
 DYN_WEB.Event.domReady( function() {
-    var slider_qIn 
+    var slider_qIn
         = new DYN_WEB.Slider('slider_qIn', 'track_qIn', 'h');
     slider_qIn.on_move = function(x,y) {
         change_qIn(x);
@@ -239,7 +239,7 @@ function change_qInSliderPos(qIn){
 //#############################################
 
 DYN_WEB.Event.domReady( function() {
-    var slider_speedL 
+    var slider_speedL
         = new DYN_WEB.Slider('slider_speedL', 'track_speedL', 'h');
     slider_speedL.on_move = function(x,y) {
         change_speedL(x);
@@ -275,7 +275,7 @@ function change_speedLSliderPos(speedL){
 
 
 DYN_WEB.Event.domReady( function() {
-    var slider_IDM_v0 
+    var slider_IDM_v0
         = new DYN_WEB.Slider('slider_IDM_v0', 'track_IDM_v0', 'h');
     slider_IDM_v0.on_move = function(x,y) {
         change_IDM_v0(x);
@@ -287,7 +287,7 @@ DYN_WEB.Event.domReady( function() {
 
 
 function change_IDM_v0(x){ // callback action of slider movement
-    IDM_v0=IDM_v0_min +(IDM_v0_max-IDM_v0_min)*x/sliderWidth; 
+    IDM_v0=IDM_v0_min +(IDM_v0_max-IDM_v0_min)*x/sliderWidth;
     updateModels();
 
 }
@@ -308,7 +308,7 @@ function change_IDM_v0SliderPos(IDM_v0){
 
 
 DYN_WEB.Event.domReady( function() {
-    var slider_IDM_T 
+    var slider_IDM_T
         = new DYN_WEB.Slider('slider_IDM_T', 'track_IDM_T', 'h');
     slider_IDM_T.on_move = function(x,y) {
         change_IDM_T(x);
@@ -321,7 +321,7 @@ DYN_WEB.Event.domReady( function() {
 
 function change_IDM_T(x){ // callback action of slider movement
     IDM_T=IDM_T_min
-    +(IDM_T_max-IDM_T_min)*x/sliderWidth; 
+    +(IDM_T_max-IDM_T_min)*x/sliderWidth;
     updateModels();
 }
 
@@ -339,7 +339,7 @@ function change_IDM_TSliderPos(IDM_T){
 //#############################################
 
 DYN_WEB.Event.domReady( function() {
-    var slider_IDM_s0 
+    var slider_IDM_s0
         = new DYN_WEB.Slider('slider_IDM_s0', 'track_IDM_s0', 'h');
     slider_IDM_s0.on_move = function(x,y) {
         change_IDM_s0(x);
@@ -352,7 +352,7 @@ DYN_WEB.Event.domReady( function() {
 
 function change_IDM_s0(x){ // callback action of slider movement
     IDM_s0=IDM_s0_min
-    +(IDM_s0_max-IDM_s0_min)*x/sliderWidth; 
+    +(IDM_s0_max-IDM_s0_min)*x/sliderWidth;
     updateModels();
 }
 
@@ -372,7 +372,7 @@ function change_IDM_s0SliderPos(IDM_s0){
 
 
 DYN_WEB.Event.domReady( function() {
-    var slider_IDM_a 
+    var slider_IDM_a
         = new DYN_WEB.Slider('slider_IDM_a', 'track_IDM_a', 'h');
     slider_IDM_a.on_move = function(x,y) {
         change_IDM_a(x);
@@ -384,7 +384,7 @@ DYN_WEB.Event.domReady( function() {
 
 function change_IDM_a(x){ // callback action of slider movement
     IDM_a=IDM_a_min
-    +(IDM_a_max-IDM_a_min)*x/sliderWidth; 
+    +(IDM_a_max-IDM_a_min)*x/sliderWidth;
     updateModels();
 }
 
@@ -403,7 +403,7 @@ function change_IDM_aSliderPos(IDM_a){
 //#############################################
 
 DYN_WEB.Event.domReady( function() {
-    var slider_IDM_b 
+    var slider_IDM_b
         = new DYN_WEB.Slider('slider_IDM_b', 'track_IDM_b', 'h');
     slider_IDM_b.on_move = function(x,y) {
         change_IDM_b(x);
@@ -415,7 +415,7 @@ DYN_WEB.Event.domReady( function() {
 
 function change_IDM_b(x){ // callback action of slider movement
     IDM_b=IDM_b_min
-    +(IDM_b_max-IDM_b_min)*x/sliderWidth; 
+    +(IDM_b_max-IDM_b_min)*x/sliderWidth;
     updateModels();
 }
 
@@ -427,5 +427,3 @@ function change_IDM_bSliderPos(IDM_b){
     document.getElementById('valueField_IDM_b').innerHTML
            =parseFloat(IDM_b,10).toFixed(1)+" m/s<sup>2</sup>";
 }
-
-

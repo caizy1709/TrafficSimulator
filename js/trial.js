@@ -25,6 +25,8 @@ var itime = 0;
 var fps = 20; // frames per second (unchanged during runtime)
 var dt = 0.5; // only initialization
 
+var targetTime = 1800;
+
 
 // physical geometry settings [m]
 
@@ -38,8 +40,14 @@ var beginUL = 300;
 var beginUR = 700;
 var beginToll = 350;
 var endToll = 400;
-var laneRoadworks = 
+var laneRoadworks =
   [
+    [
+      [0, 7], beginUL + lenRoadworkElement
+    ],
+    [
+      [0, 7], beginUL + 2 * lenRoadworkElement
+    ],
     [
       [0, 1, 6,7], beginUL
     ],
@@ -98,10 +106,10 @@ var laneRoadworks =
       [0, 1, 6,7], beginUL - 18 * lenRoadworkElement
     ],
     [
-      [0,7], beginUL - 19 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 19 * lenRoadworkElement
     ],
     [
-      [0,7], beginUL - 20 * lenRoadworkElement
+      [0, 1, 6,7], beginUL - 20 * lenRoadworkElement
     ],
     [
       [0,7], beginUR - 3 * lenRoadworkElement
@@ -173,7 +181,7 @@ var truckFracToleratedMismatch = 0.2; // open system: need tolerance, otherwise 
 var T_truck = factor_T_truck * IDM_T;
 var a_truck = 1.1;
 
-// var longModelCar etc defined (w/o value) in uphill.js 
+// var longModelCar etc defined (w/o value) in uphill.js
 
 //in gui.js:
 // longModelCar = new ACC(IDM_v0, IDM_T, IDM_s0, IDM_a, IDM_b);
@@ -321,6 +329,11 @@ function updateU() {
 
   time += dt; // dt depends on timewarp slider (fps=const)
   itime++;
+
+  console.log(time);
+  if(Math.abs(time - targetTime) < 0.1) {
+    alert("there are " + mainroad.passedTollNum + " vehicles passed in 1000s");
+  }
 
   // transfer effects from slider interaction => updateModels() in *_gui.js
   // to the vehicles and their models (all cars and trucks share

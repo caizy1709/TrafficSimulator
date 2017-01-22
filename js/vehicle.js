@@ -37,6 +37,8 @@ function vehicle(length, width, u, lane, speed, type){
     this.longModel=new ACC(20,1.3,2,1,2);//IDM_v0,IDM_T,IDM_s0,IDM_a,IDM_b);
     this.LCModel=new MOBIL(4,0.2,0.3); //MOBIL_bSafe, MOBIL_bThr, MOBIL_bBiasRight);
 
+    this.passedToll = false;
+
 
 
 vehicle.prototype.setRoute=function(route){
@@ -45,4 +47,3 @@ vehicle.prototype.setRoute=function(route){
 
 
 }
-
