@@ -15,9 +15,9 @@ longitudinal model IDM
 @return:      IDM instance (constructor)
 */
 
- 
+
 function IDM(v0,T,s0,a,b){
-    this.v0=v0; 
+    this.v0=v0;
     this.T=T;
     this.s0=s0;
     this.a=a;
@@ -26,7 +26,7 @@ function IDM(v0,T,s0,a,b){
 
     // possible restrictions (value 1000 => initially no restriction)
 
-    this.speedlimit=1000; // if effective speed limits, speedlimit<v0  
+    this.speedlimit=1000; // if effective speed limits, speedlimit<v0
     this.speedmax=1000; // if vehicle restricts speed, speedmax<speedlimit, v0
     this.bmax=16;
 }
@@ -65,7 +65,7 @@ IDM.prototype.calcAcc=function(s,v,vl,al){ // this works as well
 
         // return original IDM
 
-	return (v0eff<0.00001) ? 0 
+	return (v0eff<0.00001) ? 0
 	    : Math.max(-this.bmax, accFree + accInt + accRnd);
 
         // return IDM+
@@ -82,7 +82,7 @@ IDM.prototype.calcAcc=function(s,v,vl,al){ // this works as well
 
 
 /**
-MT 2016: longitudinal model ACC: Has same parameters as IDM 
+MT 2016: longitudinal model ACC: Has same parameters as IDM
 but exactly triangular steady state and "cooler" reactions if gap too small
 
 @param v:     desired speed [m/s]
@@ -103,7 +103,7 @@ function myTanh(x){
 }
 
 function ACC(v0,T,s0,a,b){
-    this.v0=v0; 
+    this.v0=v0;
     this.T=T;
     this.s0=s0;
     this.a=a;
@@ -111,7 +111,7 @@ function ACC(v0,T,s0,a,b){
     this.cool=0.99;
     this.alpha_v0=1; // multiplicator for temporary reduction
 
-    this.speedlimit=1000; // if effective speed limits, speedlimit<v0  
+    this.speedlimit=1000; // if effective speed limits, speedlimit<v0
     this.speedmax=1000; // if vehicle restricts speed, speedmax<speedlimit, v0
     this.bmax=18;
 }
@@ -153,18 +153,18 @@ ACC.prototype.calcAcc=function(s,v,vl,al){ // this works as well
 	var accIDM=accFree+accInt;
 
 	var accCAH=(vl*(v-vl) < -2*s*al)
-	    ? v*v*al/(vl*vl -2*s*al) 
+	    ? v*v*al/(vl*vl -2*s*al)
 	    : al - Math.pow(v-vl,2)/(2*Math.max(s,0.01)) * ((v>vl) ? 1 : 0);
 	accCAH=Math.min(accCAH,this.a);
 
-	var accMix=(accIDM>accCAH) 
+	var accMix=(accIDM>accCAH)
 	    ? accIDM
 	    : accCAH+this.b*myTanh((accIDM-accCAH)/this.b);
 	var arg=(accIDM-accCAH)/this.b;
 
 	var accACC=this.cool*accMix +(1-this.cool)*accIDM;
 
-	var accReturn=(v0eff<0.00001) 
+	var accReturn=(v0eff<0.00001)
 	    ? 0 : Math.max(-this.bmax, accACC + accRnd);
 
         // log and return
@@ -197,11 +197,11 @@ ACC.prototype.calcAcc=function(s,v,vl,al){ // this works as well
 
 /**
 generalized lane-changing model MOBIL:
-at present no politeness but speed dependent safe deceleration 
+at present no politeness but speed dependent safe deceleration
 
 @param bSafe:      safe deceleration [m/s^2] at maximum speed v=v0
 @param bSafeMax:   safe deceleration [m/s^2]  at speed zero (gen. higher)
-@param bThr:       lane-changing threshold [m/s^2] 
+@param bThr:       lane-changing threshold [m/s^2]
 @param bBiasRight: bias [m/s^2] to the right
 @return:           MOBIL instance (constructor)
 */
@@ -213,9 +213,9 @@ function MOBIL(bSafe, bSafeMax, bThr, bBiasRight){
     this.bSafeMax=bSafeMax; //!!! transfer into arg list of cstr later on
 
     this.vrelThr = 0.9;
-    this.distThr = 300;
+    this.distThr = 100;
     this.congestThr = 0.1;
-    //this.p=p; 
+    //this.p=p;
 
 
 
@@ -252,13 +252,13 @@ function MOBIL(bSafe, bSafeMax, bThr, bBiasRight){
 	if(log || (this.bSafe>24)){
 	  console.log("...dacc="+dacc);
 	  if(dacc>0){console.log("  positive MOBIL LC decision!");}
-	}	
+	}
 	return (dacc>0);
     }
 
     /**
     decide whether should attempt to change the lane.
-    change lane only if 
+    change lane only if
     1. current vrel is low, and
     2. congestion in this lane is over the threshold, and
     3. congestion of the new lane is smaller than current lane
@@ -274,7 +274,7 @@ function MOBIL(bSafe, bSafeMax, bThr, bBiasRight){
     MOBIL.prototype.congestion = function(dist, persp_vrel) {
     	//if lead car is far away or quick enough, no congestion
     	if (dist > this.distThr || persp_vrel > this.vrelThr) {
-    		return 0; 
+    		return 0;
     	}
     	 // == 1 if persp_vrel == 0 || dist == 0
     	 // smaller if persp_vrel or dist small

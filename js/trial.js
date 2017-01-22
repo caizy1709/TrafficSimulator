@@ -31,7 +31,7 @@ var dt=0.5; // only initialization
 var mainroadLen=1770;
 var nLanes=8;
 var laneWidth=7;
-var spawnLanes = [1,2,3,4];
+var spawnLanes = [0,1,2,3,4,5,6,7];
 
 var lenRoadworkElement=10;
 var beginUL = 300;
