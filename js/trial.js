@@ -35,9 +35,18 @@ var nLanes = 8;
 var laneWidth = 7;
 var spawnLanes = [3, 4, 5, 6];
 
+var etcPercentage = 0.5;
+var humanPercentage = 0.5;
+var humanFailProb = 0.1;
+var humanSlowdownTo = 0.9;
+//AIFailProb = 0; yeah! all hail Neural Networks
+
 var lenRoadworkElement = 10;
 var beginUL = 300;
 var beginUR = 700;
+var beginPreToll = 300;
+var endPreToll = 350;
+
 var beginToll = 350;
 var endToll = 400;
 var laneRoadworks =
@@ -203,6 +212,14 @@ longModelCarToll.speedlimit = IDM_v0Toll;
 longModelTruckToll.speedlimit = IDM_v0Toll;
 longModelCarToll.speedmax = IDM_v0Toll;
 longModelTruckToll.speedmax = IDM_v0Toll;
+
+var IDM_v0PreToll = 20; //init free v0 = 50
+longModelCarPreToll =  new ACC(IDM_v0PreToll, IDM_T, IDM_s0, IDM_a, IDM_b * 50);
+longModelTruckPreToll = new ACC(IDM_v0PreToll, T_truck, IDM_s0, a_truck, IDM_b * 50);
+longModelCarPreToll.speedlimit = IDM_v0PreToll;
+longModelTruckPreToll.speedlimit = IDM_v0PreToll;
+longModelCarPreToll.speedmax = IDM_v0PreToll;
+longModelTruckPreToll.speedmax = IDM_v0PreToll;
 // LCModelCarToll = LCModelCar;
 // LCModelTruckToll = LCModelTruck;
 
@@ -351,7 +368,8 @@ function updateU() {
   // starting at 0 up to the position uBeginRoadworks
 
   // mainroad.setLCMandatory(0, uBeginRoadworks, true);
-
+mainroad.setCFModelsInRange(beginPreToll, endPreToll,
+    longModelCarPreToll, longModelTruckPreToll);
   mainroad.setCFModelsInRange(beginToll, endToll,
     longModelCarToll, longModelTruckToll);
   // mainroad.setLCModelsInRange(beginToll, uEndToll,
