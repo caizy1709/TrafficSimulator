@@ -12,7 +12,8 @@ function vehicle(length, width, u, lane, speed, type){
     this.route=[]; // route=sequence of road IDs (optional)
     this.mandatoryLCahead=false;
     this.toRight=false; // set strong urge to toRight IF mandatoryLCahead
-
+    this.isETC = false;
+    this.isHuman = false;
 
     this.v=lane;  // v = lane coordinate, not speed!!
     this.dvdu=lane;

@@ -171,8 +171,8 @@ road.prototype.setCFModelsInRange
     for(var i=0; i<this.veh.length; i++){
 	var u=this.veh[i].u;
 	if((u>umin)&&(u<umax)){
-	    if(this.veh[i].type=="car"){this.veh[i].longModel=longModelCar;}
-	    if(this.veh[i].type=="truck"){this.veh[i].longModel=longModelTruck;}
+	    if(this.veh[i].type=="car" && this.veh[i].isETC == false){this.veh[i].longModel=longModelCar;}
+	    if(this.veh[i].type=="truck" && this.veh[i].isETC == false){this.veh[i].longModel=longModelTruck;}
 	}
     }
 }
@@ -190,8 +190,8 @@ road.prototype.setLCModelsInRange
     for(var i=0; i<this.veh.length; i++){
 	var u=this.veh[i].u;
 	if((u>umin)&&(u<umax)){
-	    if(this.veh[i].type=="car"){this.veh[i].LCModel=LCModelCar;}
-	    if(this.veh[i].type=="truck"){this.veh[i].LCModel=LCModelTruck;}
+	    if(this.veh[i].type=="car" && this.veh[i].isETC == false){this.veh[i].LCModel=LCModelCar;}
+	    if(this.veh[i].type=="truck" && this.veh[i].isETC == false){this.veh[i].LCModel=LCModelTruck;}
 	}
     }
 }
@@ -413,6 +413,10 @@ road.prototype.calcAccelerations=function(){
 	}
 	this.veh[i].acc
 	    =this.veh[i].longModel.calcAcc(s,speed,speedLead,accLead);
+
+  if (this.veh[i].isHuman && (Math.random() < humanFailProb)) {
+    this.veh[i].acc *= humanSlowdownTo;
+  }  
 	//if(false){
 	//if(this.veh[i].mandatoryLCahead){
 	//if(speed>1.05*this.veh[i].longModel.v0){
@@ -546,8 +550,11 @@ road.prototype.doChangesInDirection=function(toRight){
 
 	 var MOBILOK=this.veh[i].LCModel.realizeLaneChange(vrel,acc,accNew,accLagNew,toRight,false);
 
+   var rightChoice = (!this.veh[i].isHuman) || (Math.random() >= humanFailProb);
 	 changeSuccessful=(this.veh[i].type != "obstacle")&&(sNew>0)&&(sLagNew>0)&&MOBILOK;
-	 if(changeSuccessful){
+	 
+   //if should change and right
+   if(changeSuccessful && rightChoice){
 
              // do lane change in the direction toRight (left if toRight=0)
 	     //!! only regular lane changes within road; merging/diverging separately!
@@ -1035,7 +1042,13 @@ road.prototype.updateBCup=function(Qin,dt,route){
 	  var vehNew=new vehicle(vehLength,vehWidth,uNew,lane,speedNew,vehType);
 	  vehNew.longModel=longModelNew;
 	  vehNew.route=this.route;
-
+    if ( Math.random() < etcPercentage) {
+      vehNew.isETC = true;
+    }
+    if ( Math.random() < humanPercentage) {
+      vehNew.isHuman = true;
+    }
+    
 	  this.veh.push(vehNew); // add vehicle after pos nveh-1
 	  this.inVehBuffer -=1;
 	  this.nveh++;
@@ -1161,8 +1174,13 @@ road.prototype.updateModelsOfAllVehicles=function(longModelCar,longModelTruck,
 
 road.prototype.updateLastLCtimes=function(dt){
     for(var i=0; i<this.nveh; i++){
-      this.veh[i].dt_lastLC +=dt;
+      if (this.veh[i].type == 'obstacle') {
+      this.veh[i].dt_lastLC = 10000;
+      this.veh[i].dt_lastPassiveLC = 10000;
+      } else {
+        this.veh[i].dt_lastLC +=dt;
       this.veh[i].dt_lastPassiveLC +=dt;
+      }
     }
 }
 

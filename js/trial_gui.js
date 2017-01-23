@@ -25,10 +25,10 @@ var sliderWidth=100; // max value reached if slider at sliderWidth
 
 // controlled contents of sliders
 
-var timewarpInit=30;
+var timewarpInit=80;
 var timewarp=timewarpInit;
 var timewarp_min=0.1;
-var timewarp_max=30;
+var timewarp_max=80;
 
 var scaleInit=2.4;  // pixel/m
 var scale=scaleInit;
