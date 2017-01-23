@@ -38,6 +38,8 @@ function vehicle(length, width, u, lane, speed, type){
     this.LCModel=new MOBIL(4,0.2,0.3); //MOBIL_bSafe, MOBIL_bThr, MOBIL_bBiasRight);
 
     this.passedToll = false;
+    this.paid = false;
+    this.timeStart = null; // time after toll
 
 
 

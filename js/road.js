@@ -16,6 +16,7 @@ function road(roadID, roadLen, nLanes, densInitPerLane, speedInit, truckFracInit
     this.nveh=Math.floor(this.nLanes*this.roadLen*densInitPerLane);
 
     this.passedTollNum = 0;
+    this.totalPassTime = 0;
 
     // network related properties
 
@@ -438,7 +439,7 @@ road.prototype.calcAccelerations=function(){
 // including ring closure if isRing
 //######################################################################
 
-road.prototype.updateSpeedPositions=function(){
+road.prototype.updateSpeedPositions=function(time){
   for(var i=0; i<this.nveh; i++){
 
       this.veh[i].u += Math.max(0,this.veh[i].speed*dt+0.5*this.veh[i].acc*dt*dt);
@@ -449,9 +450,15 @@ road.prototype.updateSpeedPositions=function(){
     if(this.veh[i].speed<0){this.veh[i].speed=0;}
 
     // update drawing coordinates: get_v (fractional lane)
+    if (this.veh[i].type == 'car' && !this.veh[i].paid && this.veh[i].u >= 720) {
+      this.veh[i].timeStart = time;
+      this.veh[i].paid = true;
+    }
 
-    if (this.veh[i].type == 'car' && !this.veh[i].passedToll && this.veh[i].u >= 730) {
+    if (this.veh[i].type == 'car' && !this.veh[i].passedToll && this.veh[i].u >= 820) {
       this.passedTollNum += 1;
+      this.totalPassTime += (time - this.veh[i].timeStart);
+      console.log("passtime: ",time - this.veh[i].timeStart);
       this.veh[i].passedToll = true;
     }
 
