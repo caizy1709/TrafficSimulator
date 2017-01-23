@@ -33,13 +33,22 @@ var targetTime = 1800;
 var mainroadLen = 1770;
 var nLanes = 8;
 var laneWidth = 7;
-var spawnLanes = [3, 4, 5];
+var spawnLanes = [3, 4, 5, 6];
 
+var etcPercentage = 0.5;
+var humanPercentage = 0.5;
+var humanFailProb = 0.1;
+var humanSlowdownTo = 0.9;
+//AIFailProb = 0; yeah! all hail Neural Networks
+
+var lenRoadworkElement = 10;
 var lenRoadworkElement = 10;
 var beginUL = 600;
 var beginUR = 820;
 var beginToll = 680;
 var endToll = 720;
+var beginPreToll = 630;
+var endPreToll = 680;
 var laneRoadworks =
   [ //题目说要determine ... following the toll,所以只更改右侧shape,size
     // [
@@ -330,6 +339,7 @@ var laneRoadworks =
     ],
   ]
 
+
 var straightLen = 0.34 * mainroadLen; // straight segments of U
 var arcLen = mainroadLen - 2 * straightLen; // length of half-circe arc of U
 var arcRadius = arcLen / Math.PI;
@@ -399,6 +409,14 @@ longModelCarToll.speedlimit = IDM_v0Toll;
 longModelTruckToll.speedlimit = IDM_v0Toll;
 longModelCarToll.speedmax = IDM_v0Toll;
 longModelTruckToll.speedmax = IDM_v0Toll;
+
+var IDM_v0PreToll = 20; //init free v0 = 50
+longModelCarPreToll =  new ACC(IDM_v0PreToll, IDM_T, IDM_s0, IDM_a, IDM_b * 50);
+longModelTruckPreToll = new ACC(IDM_v0PreToll, T_truck, IDM_s0, a_truck, IDM_b * 50);
+longModelCarPreToll.speedlimit = IDM_v0PreToll;
+longModelTruckPreToll.speedlimit = IDM_v0PreToll;
+longModelCarPreToll.speedmax = IDM_v0PreToll;
+longModelTruckPreToll.speedmax = IDM_v0PreToll;
 // LCModelCarToll = LCModelCar;
 // LCModelTruckToll = LCModelTruck;
 
@@ -547,7 +565,8 @@ function updateU() {
   // starting at 0 up to the position uBeginRoadworks
 
   // mainroad.setLCMandatory(0, uBeginRoadworks, true);
-
+mainroad.setCFModelsInRange(beginPreToll, endPreToll,
+    longModelCarPreToll, longModelTruckPreToll);
   mainroad.setCFModelsInRange(beginToll, endToll,
     longModelCarToll, longModelTruckToll);
   // mainroad.setLCModelsInRange(beginToll, uEndToll,
