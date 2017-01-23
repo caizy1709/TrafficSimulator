@@ -33,7 +33,7 @@ var targetTime = 1800;
 var mainroadLen = 1770;
 var nLanes = 8;
 var laneWidth = 7;
-// var spawnLanes = [3, 4, 5, 6];
+var spawnLanes = [3, 4, 5, 6];
 
 var lenRoadworkElement = 10;
 var beginUL = 300;
@@ -332,7 +332,7 @@ function updateU() {
 
   console.log(time);
   if(Math.abs(time - targetTime) < 0.1) {
-    alert("there are " + mainroad.passedTollNum + " vehicles passed in 1000s");
+    alert("there are " + mainroad.passedTollNum + " vehicles passed in " + targetTime + "s");
   }
 
   // transfer effects from slider interaction => updateModels() in *_gui.js
